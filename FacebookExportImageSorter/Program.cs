@@ -24,6 +24,34 @@ foreach (var jsonFile in jsonFiles)
     messages.AddRange(messagesWithPhotos);
 }
 
+foreach (var message in messages)
+{
+    // datetime from message.timstamp
+    var date = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+    date = date.AddMilliseconds(message.Timestamp_Ms);
+
+    var folderPath = @$"{TargetPath}/{date.Year}/";
+    var fileName = $@"{date.Year}-{date.Month.ToString().PadLeft(2, '0')}-{date.Day.ToString().PadLeft(2, '0')}-{message.Timestamp_Ms}";
+
+    var imageNr = 0;
+    foreach (var image in message.Photos)
+    {
+        if (image.Uri.StartsWith("https://"))
+            continue;
+
+        var sourceAbsolutePath = $"{DataPath}/{image.Uri}";
+        var extension = image.Uri[^4..];
+        var targetAbsolutePath = $"{folderPath}/{fileName}-{(++imageNr).ToString().PadLeft(4, '0')}{extension}";
+
+        Console.WriteLine(targetAbsolutePath);
+        new FileInfo(targetAbsolutePath).Directory.Create();
+        File.Copy(
+            sourceAbsolutePath,
+            targetAbsolutePath,
+            overwrite: true);
+    }
+}
+
 
 
 
